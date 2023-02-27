@@ -6,6 +6,18 @@ import java.util.Calendar;
 
 public class Ex80_File {
 	
+	private static int fileCount;	//메인에 공통으로 쓰일 수 있는 count변수 따로 빼기
+	private static int dirCount;	//자식폴더 개수
+	private static int length;		//파일 크기
+	
+	
+	static {
+		fileCount = 0;
+		dirCount = 0;
+		length = 0;
+	}
+	
+	
 	public static void main(String[] args) {
 		
 		//Ex80_File.java
@@ -42,7 +54,242 @@ public class Ex80_File {
 //		m9();		//날짜별로 폴더 생성
 //		m10();		//폴더명 수정+이동
 //		m11();		//폴더 삭제하기(delete) - 빈 폴더만 삭제 가능(자식 폴더가 있으면 못지움)
-		m12();		//폴더 내용 보기
+//		m12();		//폴더 내용 보기
+//		m13();		//재귀 메소드 -> 가끔씩 쓰는앤데 대체제가 없음
+//		m14();		//재귀 메소드 예시
+//		m16();		//재귀 메소드 예시(팩토리얼)
+//		m18();		//폴더 속 폴더 속 파일 가져오기
+//		m19();		//m18()을 좀 더 가볍게
+		m20();		//Q117 풀이
+		
+		
+		//재귀 메소드는 트리구조 탐색(조작) 할 때 자주 쓰임
+		
+		
+	}
+
+	
+	private static void m20() {
+		// 폴더 삭제
+		String path = "C:\\Users\\Yang Sein\\Desktop\\쌍용교육센터\\과제\\파일_디렉토리_문제\\폴더 삭제\\delete";
+		File dir = new File(path);
+		
+		if (dir.exists()) {
+//			System.out.println(dir.delete()); 		//false. 파일들이 남아있기 때문에
+			
+			delete(dir);
+			
+			
+			
+		}
+	}
+	
+	private static void delete(File dir) {
+		
+		//1. 목록 가져오기
+		File[] list = dir.listFiles(); 	
+		
+			//2. 파일 삭제하기 위해 파일 찾기
+			for(File file : list) {		
+				if(file.isFile()) {		
+					file.delete();		//프로그램 사용중 빼고는 모든 파일은 지울 수 있음
+				}
+			}
+			
+			//3. 자식 폴더를 빈 폴더로 만들고 삭제하기 위해서
+			for(File subdir : list) {
+				if(subdir.isDirectory()) {
+					delete(subdir);			//재귀 메소드
+				}
+			}
+			
+			//4. 호출된 폴더 > 파일 모두 삭제 + 자식 폴더는 없음 == 빈폴더
+			dir.delete();
+			
+			
+	}
+
+
+	private static void m19() {
+		// C:\class\dev\eclipse
+		//- 파일 : 11,757, 폴더 2,501
+		//- 730MB (765,853,013 바이트)
+		
+		String path = "C:\\class\\dev\\eclipse";	
+		File dir = new File(path);	
+		
+		if(dir.exists()) {
+			
+			count(dir);
+			
+			
+		}
+		System.out.printf("총 파일 개수: %,d개\n", fileCount);
+		System.out.printf("총 폴더 개수: %,d개\n", dirCount);
+		System.out.printf("폴더 크기: %,dB\n", length);
+		System.out.printf("폴더 크기: %,dMB\n", length / 1024 / 1024);
+		
+		
+		
+	}
+
+
+	private static void count(File dir) {
+		
+		//1. 목록 가져오기
+		File[] list = dir.listFiles(); 	
+		
+			//2. 파일 개수 세기
+			for(File file : list) {		
+				if(file.isFile()) {		
+					fileCount++;
+					length += file.length();
+				}
+			}
+			
+			//3. 자식 폴더 대상으로 방금 행동 반복
+			//자식 폴더가 없을때까지 탐색
+			for(File subdir : list) {
+				if(subdir.isDirectory()) {
+					dirCount++;
+					count(subdir);	//재귀 메소드
+				}
+			}
+			
+	}
+
+
+	private static void m18() {
+		// C:\class\dev\eclipse
+		//- 파일 : 11,598, 폴더 2,379
+		//- 730MB (765,490,890 바이트)
+		
+		String path = "C:\\class\\dev\\eclipse";	//몇 단계까지 자식폴더가 있는지 어떻게 앎?
+		File dir = new File(path);					//-> 언제까지 내려가야할지 불특정한 상황
+													//	-> 더이상 자식폴더가 없을때까지 무한 루프, 조건에 걸리면 break
+		int count = 0;	//누적변수
+		if(dir.exists()) {
+			
+			//1. 목록 가져오기
+			File[] list = dir.listFiles(); 	//부모 폴더
+			
+				//2. 파일 개수 세기
+				//자식 파일 > 개수
+				for(File file : list) {		//file에 list 복사
+					if(file.isFile()) {		//파일만 고르기
+						count++;
+					}
+				}
+				
+				//3. 자식 폴더 대상으로 방금 행동 반복
+				//자식 폴더 > 탐색 + 파일 개수
+				for(File subdir : list) {
+					if(subdir.isDirectory()) {	//폴더니?
+						
+						//자식 폴더의 내용
+						File[] sublist = subdir.listFiles();	//자식 폴더
+						
+						for(File subfile : sublist) {	//subfile에 sublist 복사
+							if(subfile.isFile()) {		//파일만 고르기
+								count++;
+							}
+						}
+						
+						//손자 폴더 > 탐색 + 파일 개수
+						for(File subsubdir : sublist) {
+							if(subsubdir.isDirectory()) {	//sublist 폴더 속 파일 찾기
+								
+								//손자 폴더의 내용
+								File[] subsublist = subsubdir.listFiles();
+								
+								for(File subsubfile : subsublist) {
+									count++;
+								}
+								
+							}
+						}
+					}
+				}
+			System.out.printf("총 파일 개수: %,d개\n", count);
+			
+		}
+		
+		
+	}
+
+
+	private static void m16() {
+		// 팩토리얼
+		//4! = 4 * 3 * 2 * 1 = 24
+		
+		int n = 4;
+		
+		int result = m17(n);
+		System.out.println(result);
+		
+		
+		result = factorial(n);
+		System.out.printf("%d! = %d\n", n, result);
+		
+		
+	}
+	
+	private static int factorial(int n) {
+		
+		return (n == 1) ? 1 : n * factorial(n - 1);	//재귀 호출
+	}
+
+
+	private static int m17(int n) {
+		
+		System.out.println(n);
+
+		int result = (n == 1) ? 1 : m17(n-1);	//n이 1이면 1, 아니면 n-1 돌려줌
+		
+		return result;
+		
+	}
+
+
+	private static void m14() {
+		
+		int n = 1;
+		m15(n);
+		
+	}
+
+	private static void m15(int n) {
+		
+		//for문이나 while문이 재귀호출을 대체하지 못하는 때가 있음 > 그때 사용을 위해 배우기
+		System.out.println(n);
+		n++;
+//		if(조건) {	//조건은 정해진게 없음
+		if(n < 10) {
+			m15(n); //재귀 호출
+		}	//자기 자신을 호출하는데 호출하면서 점점 커짐(n++ 때문)
+		
+	}
+
+
+	private static void m13() {
+		// 메소드 사용 + 파일 디렉토리 조작
+		
+		//선언 + 호출
+		//test();
+		
+	}
+	
+	
+	//재귀 메소드(Recursive Method) <- 자기가 자기를 계속 호출하는 메소드
+	public static void test() {
+		
+		System.out.println("메소드 호출");
+		
+		//java.lang.StackOverflowError
+		test(); //자기가 자기를 호출 > 에러 발생(X) > 재귀 호출(Recursive Call)
+		//쌍둥이를 부른거라고 생각 -> 같은 애는 아니지만 메소드를 계속 호출 : 무한 루프 > 메모리 영역이 계속 쌓이고 쌓임
+		//뭔가를 반복적으로 하고 싶을때 함. 메소드 호출 특성을 통한 반복
+		
 		
 		
 	}
